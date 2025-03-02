@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with Multiple Players</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Leaflet Map with Multiple Players</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map and set its view
+        var map = L.map('map').setView([40.7128, -74.0060], 5); // Zoomed out to fit multiple markers
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Example game status data (replace with your actual data)
+        const game_status = {
+            "game_status": true,
+            "Bob": { "location": [42.36036, -71.08727],"role": "Tagger"},
+            "Alice": { "location": [40.7128, -74.0060],"role": "Runner" },
+            "Charlie": { "location": [34.0522, -118.2437],"role": "Runner" }
+        };
+
+        // Loop through the players in game_status and add markers
+        for (var player in game_status) {
+            if (player !== "game_status") { // Ignore the "game_status" key itself
+                var playerData = game_status[player];
+		 
+	        var markerColor = playerData.role === "Tagger" ? 'red' : 'blue'; // Red for Tagger, Blue for others
+
+        // Create the marker with the determined color
+                L.marker(playerData.location, {
+            		icon: L.divIcon({
+                		className: 'custom-triangle-icon',
+                		html: `
+                    			<div style="position: relative; width: 0; height: 0;">
+                        			<!-- Triangle -->
+                        			<div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid ${markerColor};"></div>
+                        			<!-- Circle on top -->
+                        			<div style="position: absolute; top: -15px; right: -19px ; width: 12px; height: 12px; background-color: ${markerColor}; border-radius: 50%; border: 3px solid ${markerColor};"></div>
+                    </div>`,
+                iconSize: [20, 30] // Size of the icon (adjust to fit both)
+            })
+        }).addTo(map)
+        .bindPopup(player); // Bind popup with player name
+    }
+}
+
+        // Add a red circle around NYC (just as an example)
+        L.circle([40.7128, -74.0060], {
+            color: "red",
+            fillColor: "pink",
+            fillOpacity: 0.5,
+            radius: 1000 // Example radius, adjust as needed
+        }).addTo(map)
+          .bindPopup("This is a red circle around NYC!");
+    </script>
+    <h4>This map displays all players 
+
+</body>
+</html>
