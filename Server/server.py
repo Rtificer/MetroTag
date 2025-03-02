@@ -16,32 +16,31 @@ class Player:
         self.is_tagged = False
         
 class Game:
-    def __init__(self, lobby_name, password):
+    def __init__(self, lobby_name):
         self.lobby_name = lobby_name
-        self.password = password
         self.active = False
         self.players = []
 
 games = []
 
 def verify_credentials_data(data):
-    if 'lobby_name' not in data and 'user_name' not in data:
+    if 'lobby_name' not in data:
         return -1
     
-    if not isinstance(data['lobby_name'], str) or not isinstance(data['password'], str):
+    if not isinstance(data['lobby_name'], str)
         return -1
 
     for index, game in enumerate(games):
-        if game.lobby_name == data['lobby_name'] and game.password == data['password']:
+        if game.lobby_name == data['lobby_name']
             return index
     return -1
 
-def verify_credentials_arguments(lobby_name, password):
-    if not isinstance(lobby_name, str) or not isinstance(password, str):
+def verify_credentials_arguments(lobby_name):
+    if not isinstance(lobby_name, str)
         return -1
 
     for index, game in enumerate(games):
-        if game.lobby_name == lobby_name and game.password == password:
+        if game.lobby_name == lobby_name
             return index
     return -1
         
@@ -50,10 +49,10 @@ def verify_credentials_arguments(lobby_name, password):
 def create_game():
     global games
     data = request.get_json()
-    if 'lobby_name' not in data or 'password' not in data:
+    if 'lobby_name' not in data:
         return jsonify({"code": 7})
         
-    if not isinstance(data['lobby_name'], str) or not isinstance(data['password'], str):
+    if not isinstance(data['lobby_name'], str):
         return jsonify({"code": 7})
 
     if len(data['lobby_name']) < 1:
@@ -63,7 +62,7 @@ def create_game():
         if game.lobby_name == data['lobby_name']:
             return jsonify({"code": 1})
     
-    games.append(Game(data['lobby_name'], data['password']))
+    games.append(Game(data['lobby_name']))
     return jsonify({"code": 0})
 
 
@@ -71,12 +70,11 @@ def create_game():
 def get_gamestate():
     global games
     lobby_name = request.args.get("lobby_name")
-    password = request.args.get("password")
 
-    if not lobby_name or not password:
+    if not lobby_name:
         return jsonify({"code": 7})
 
-    index = verify_credentials_arguments(lobby_name, password)
+    index = verify_credentials_arguments(lobby_name)
     if index == -1:
         return jsonify({"code": 7})
 
