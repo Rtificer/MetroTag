@@ -19,7 +19,7 @@ class Player:
 class Game:
     def __init__(self, lobby_name):
         self.lobby_name = lobby_name
-        self.active = False
+        self.is_active = False
         self.players = []
 
 games = []
@@ -28,7 +28,7 @@ def verify_credentials_data(data):
     if 'lobby_name' not in data:
         return -1
     
-    if not isinstance(data['lobby_name'], str)
+    if not isinstance(data['lobby_name'], str):
         return -1
 
     for index, game in enumerate(games):
@@ -37,11 +37,11 @@ def verify_credentials_data(data):
     return -1
 
 def verify_credentials_arguments(lobby_name):
-    if not isinstance(lobby_name, str)
+    if not isinstance(lobby_name, str):
         return -1
 
     for index, game in enumerate(games):
-        if game.lobby_name == lobby_name
+        if game.lobby_name == lobby_name:
             return index
     return -1
         
@@ -118,7 +118,7 @@ def get_gamestate():
 
     game_state = {
         "code": 0,
-        "game_status": game.active,
+        "game_status": game.is_active,
         "players": {
             player.user_name: {
                 "role": player.role,
@@ -141,31 +141,21 @@ def update_player_data():
     if index == -1:
         return jsonify({"code": 7})
     
-    game = games[index]
-
-@app.route('/get_center_coords', methods=['GET'])
-def get_center_coords():
-    global games
-    lobby_name = request.args.get("lobby_name")
-
-    if not lobby_name:
+    if 'role' not in data or 'user_name' not in data or 'latitude' not in data or 'longitude' not in data or 'is_tagged' not in data:
         return jsonify({"code": 7})
-
-    index = verify_credentials_arguments(lobby_name)
-    if index == -1:
-        return jsonify({"code": 7})
-
-    game = games[index]
-
-    center = find_center_coordinates(game.players)
-    if center is None:
-        return jsonify({"code": 8, "message": "No players in the game"})  # Custom error code for no players
-
-    return jsonify({"code": 7, "center_coordinates":center})
-
-
     
+    if not isinstance(data['user_name'], str) or not isinstance(data['latitude'], float) or not isinstance(data['longitude'], float) or not isinstance(data['is_tagged'], bool):
+        return jsonify({"code": 7})
+    
+    for player in games[index].players:
+        if player.user_name == data['user_name']:
+            player.role = data['role']
+            player.location.latitude = data['latitude']
+            player.location.longitude = data['longitude']
+            player.is_tagged = data['is_tagged']
+            return jsonify({"code": 0})
 
+    return jsonify({"code": 7})
 
 if __name__ == '__main__':
     # Enable threaded mode to handle multiple requests concurrently
