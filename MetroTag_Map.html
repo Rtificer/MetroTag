@@ -27,13 +27,17 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Example game status data (replace with your actual data)
-        const game_status = {
-            "game_status": true,
-            "Bob": { "location": [42.36036, -71.08727],"role": "Tagger"},
-            "Alice": { "location": [40.7128, -74.0060],"role": "Runner" },
-            "Charlie": { "location": [34.0522, -118.2437],"role": "Runner" }
-        };
+        // Fetch the game state from the backend
+    	fetch('/get_game_state?lobby_name=exampleLobby&password=examplePassword')
+        	.then(response => response.json())
+        	.then(data => {
+            		// Assign the received data to the game_status variable
+            		const game_status = data;
+
+            		// Call the updateMap function to update the map with the game state
+            		updateMap(game_status);
+        	})
+        	.catch(error => console.log('Error fetching game state:', error));
 
         // Loop through the players in game_status and add markers
         for (var player in game_status) {
