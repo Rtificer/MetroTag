@@ -137,6 +137,8 @@ def start_game():
         return jsonify({"code": 7})
     
     games[index].is_active = True
+    
+    return jsonify({"code": 0})
 
 @app.route('/get_game_state', methods=['GET'])
 def get_gamestate():
