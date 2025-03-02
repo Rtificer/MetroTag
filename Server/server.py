@@ -47,7 +47,7 @@ def verify_credentials_arguments(lobby_name):
         
 def identify_Tagger(players):
     for player in players:
-        if player.role.lower() == "tagger":
+        if player.role == "tagger":
             return player
     return None
 
@@ -74,12 +74,12 @@ def find_center_coordinates(players):
         return None  # Return None if no players exist
 
     # Create a list of dictionaries containing lat/lon for each player
-    player_locations = [{"latitude":p.location.latitude, "longitude":p.location.longitude} for p in players]
+    player_locations = {[player.location.latitude, player.location.longitude] for player in players}
 
     # Use geolib to find the center
     center = getCenter(player_locations)
 
-    return center  # Returns {"latitude": centerLat, "longitude": centerLon}
+    return center
 
 @app.route('/create_game', methods=['POST'])
 def create_game():
@@ -101,7 +101,13 @@ def create_game():
     games.append(Game(data['lobby_name']))
     return jsonify({"code": 0})
 
-
+@app.route('/join_game', methods=['POST'])
+def create_game():
+    global games
+    data = request.get_json()
+    index = verify_credentials_data(data)
+        
+    
 @app.route('/get_game_state', methods=['GET'])
 def get_gamestate():
     global games
@@ -173,7 +179,7 @@ def get_center_coords():
 
     center = find_center_coordinates(game.players)
     if center is None:
-        return jsonify({"code": 8, "message": "No players in the game"})  # Custom error code for no players
+        return jsonify({"code": 8})
 
     return jsonify({"code": 7, "center_coordinates":center})
 
