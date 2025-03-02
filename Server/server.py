@@ -5,15 +5,15 @@ app = Flask(__name__)
 
 class Location:
     def __init__(self, latitude, longitude):
-        self.latitude = latitude
+        self.latitude = longitude
         self.longitude = longitude
 
 class Player:
-    def __init__(self, user_name, role, location):
+    def __init__(self, user_name, role):
         self.user_name = user_name
         # runner or tagger
         self.role = role
-        self.location = location
+        self.location = Location(0.0, 0.0)
         self.is_tagged = False
         
 class Game:
@@ -102,10 +102,26 @@ def create_game():
     return jsonify({"code": 0})
 
 @app.route('/join_game', methods=['POST'])
-def create_game():
+def join_game():
     global games
     data = request.get_json()
     index = verify_credentials_data(data)
+    
+    if index == -1:
+        return jsonify({"code": 7})
+    
+    if 'user_name' not in data:
+        return jsonify({"code": 7})
+    
+    if not isinstance(data['user_name'], str):
+        return jsonify({"code": 7})
+
+    for player in games[index].players:
+        if player.user_name == data['user_name']:
+            return jsonify({"code": 7})
+    
+    games[index].players.append(Player(data['user_name'], data['role']))
+    
         
     
 @app.route('/get_game_state', methods=['GET'])
@@ -181,7 +197,7 @@ def get_center_coords():
     if center is None:
         return jsonify({"code": 8})
 
-    return jsonify({"code": 0, "center_coordinates":center})
+    return jsonify({"code": 7, "center_coordinates":center})
 
 if __name__ == '__main__':
     # Enable threaded mode to handle multiple requests concurrently
