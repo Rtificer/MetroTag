@@ -17,13 +17,17 @@ class Player:
         # runner or tagger
         self.role = role
         self.location = Location(0.0, 0.0)
-        self.is_tagged = False
+        self.is_tagged = True
         
 class Game:
     def __init__(self, lobby_name):
         self.lobby_name = lobby_name
         self.is_active = False
         self.players = []
+        
+        self.bounds_center = list(find_center_coordinates(self.players))
+        #meters
+        self.bounds_radius = 2000
 
 games = []
 
@@ -47,28 +51,6 @@ def verify_credentials_arguments(lobby_name):
         if game.lobby_name == lobby_name:
             return index
     return -1
-        
-def identify_Tagger(players):
-    for player in players:
-        if player.role == "tagger":
-            return player
-    return None
-
-def find_nearest_player(tagger, players):
-    nearest_player = None
-    min_distance = float('inf')  # Initialize with a large value
-
-    for player in players:
-        if player.user_name != tagger.user_name and player.is_tagged:  # Skip the tagger itself and untagged players
-            # Calculate distance using geopy
-            tagger_location = (tagger.location.latitude, tagger.location.longitude)
-            player_location = (player.location.latitude, player.location.longitude)
-            distance = geodesic(tagger_location, player_location).kilometers
-            if distance < min_distance:
-                min_distance = distance
-                nearest_player = player
-
-    return nearest_player
 
 def find_center_coordinates(players):
     if not players:
@@ -127,18 +109,23 @@ def join_game():
     
     return jsonify({"code": 0})
 
-@app.route('/start_game', methods=['POST'])
-def start_game():
+@app.route('/get_game_settings', methods=['GET'])
+def get_game_settings():
     global games
-    data = request.get_json()
-    index = verify_credentials_data(data)
-    
+    lobby_name = request.args.get("lobby_name")
+
+    if not lobby_name:
+        return jsonify({"code": 7})
+
+    index = verify_credentials_arguments(lobby_name)
     if index == -1:
         return jsonify({"code": 7})
     
-    games[index].is_active = True
-    
-    return jsonify({"code": 0})
+    game_settings = {
+        "bounds_center": games[index].bounds_center,
+        "bounds_radius": games[index].bounds_radius
+    }
+    return jsonify({"code": 0, "game_settings": game_settings})
 
 @app.route('/get_game_state', methods=['GET'])
 def get_gamestate():
@@ -179,21 +166,42 @@ def update_player_data():
     if index == -1:
         return jsonify({"code": 7})
     
-    if 'role' not in data or 'user_name' not in data or 'latitude' not in data or 'longitude' not in data or 'is_tagged' not in data:
-        return jsonify({"code": 7})
-    
     if not isinstance(data['user_name'], str) or not isinstance(data['latitude'], float) or not isinstance(data['longitude'], float) or not isinstance(data['is_tagged'], bool):
         return jsonify({"code": 7})
     
     for player in games[index].players:
         if player.user_name == data['user_name']:
-            player.role = data['role']
-            player.location.latitude = data['latitude']
-            player.location.longitude = data['longitude']
-            player.is_tagged = data['is_tagged']
+            if 'role' in data:
+                player.role = data['role']
+            if 'latitude' in data:
+                player.location.latitude = data['latitude']
+            if 'longitude' in data:
+                player.location.longitude = data['longitude']
+            if 'is_tagged' in data:
+                player.is_tagged = data['is_tagged']
             return jsonify({"code": 0})
 
     return jsonify({"code": 7})
+
+@app.route('/update_game_settings', methods=['POST'])
+def update_player_data():
+    global games
+    data = request.get_json()
+    
+    index = verify_credentials_data(data)
+    
+    if index == -1:
+        return jsonify({"code": 7})
+    
+    if not isinstance(data['bounds_center'], float) or not isinstance(data['bounds_radius'], int):
+        return jsonify({"code": 7})
+    
+    if 'bounds_center' in data:
+        games[index] = data['bounds_center']
+    if 'bounds_radius' in data:
+        games[index] = data['bounds_radius']
+
+    return jsonify({"code": 0})
 
 @app.route('/get_center_coords', methods=['GET'])
 def get_center_coords():
