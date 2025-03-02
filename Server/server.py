@@ -181,7 +181,7 @@ def get_center_coords():
     if center is None:
         return jsonify({"code": 8})
 
-    return jsonify({"code": 7, "center_coordinates":center})
+    return jsonify({"code": 0, "center_coordinates":center})
 
 if __name__ == '__main__':
     # Enable threaded mode to handle multiple requests concurrently
