@@ -32,7 +32,7 @@ def verify_credentials_data(data):
         return -1
 
     for index, game in enumerate(games):
-        if game.lobby_name == data['lobby_name']
+        if game.lobby_name == data['lobby_name']:
             return index
     return -1
 
@@ -156,6 +156,26 @@ def update_player_data():
             return jsonify({"code": 0})
 
     return jsonify({"code": 7})
+
+@app.route('/get_center_coords', methods=['GET'])
+def get_center_coords():
+    global games
+    lobby_name = request.args.get("lobby_name")
+
+    if not lobby_name:
+        return jsonify({"code": 7})
+
+    index = verify_credentials_arguments(lobby_name)
+    if index == -1:
+        return jsonify({"code": 7})
+
+    game = games[index]
+
+    center = find_center_coordinates(game.players)
+    if center is None:
+        return jsonify({"code": 8, "message": "No players in the game"})  # Custom error code for no players
+
+    return jsonify({"code": 7, "center_coordinates":center})
 
 if __name__ == '__main__':
     # Enable threaded mode to handle multiple requests concurrently
