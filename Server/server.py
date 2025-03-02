@@ -116,10 +116,12 @@ def join_game():
         return jsonify({"code": 7})
 
     for player in games[index].players:
-        if player.user_name == data['user_name']:
+        if player.user_name == str(data['user_name']):
             return jsonify({"code": 7})
     
     games[index].players.append(Player(data['user_name']))
+    
+    return jsonify({"code": 0})
     
         
     
