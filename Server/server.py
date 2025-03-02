@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
-import geolib
+from geopy.distance import geodesic  # For distance calculations
+from geopy import Point  # For working with coordinates
 app = Flask(__name__)
 
 class Location:
@@ -55,30 +56,30 @@ def find_nearest_player(tagger, players):
     min_distance = float('inf')  # Initialize with a large value
 
     for player in players:
-        if player.user_name != tagger.user_name:  # Skip the tagger itself
-            if player.is_tagged == True:
-                # Calculate distance using geolib
-                distance = geohash.distance(
-                    (tagger.location.latitude, tagger.location.longitude),
-                    (player.location.latitude, player.location.longitude)
-                )
-                if distance < min_distance:
-                    min_distance = distance
-                    nearest_player = player
+        if player.user_name != tagger.user_name and player.is_tagged:  # Skip the tagger itself and untagged players
+            # Calculate distance using geopy
+            tagger_location = (tagger.location.latitude, tagger.location.longitude)
+            player_location = (player.location.latitude, player.location.longitude)
+            distance = geodesic(tagger_location, player_location).kilometers
+            if distance < min_distance:
+                min_distance = distance
+                nearest_player = player
 
-    return nearest_player, min_distance
+    return nearest_player
 
 def find_center_coordinates(players):
     if not players:
         return None  # Return None if no players exist
 
-    # Create a list of dictionaries containing lat/lon for each player
-    player_locations = {[player.location.latitude, player.location.longitude] for player in players}
+    # Extract latitudes and longitudes
+    latitudes = [player.location.latitude for player in players]
+    longitudes = [player.location.longitude for player in players]
 
-    # Use geolib to find the center
-    center = getCenter(player_locations)
+    # Calculate the center (average of latitudes and longitudes)
+    center_lat = sum(latitudes) / len(latitudes)
+    center_lon = sum(longitudes) / len(longitudes)
 
-    return center
+    return (center_lat, center_lon)
 
 @app.route('/create_game', methods=['POST'])
 def create_game():
@@ -198,7 +199,7 @@ def get_center_coords():
     if center is None:
         return jsonify({"code": 8})
 
-    return jsonify({"code": 7, "center_coordinates":center})
+    return jsonify({"code": 0, "center_coordinates":center})
 
 if __name__ == '__main__':
     # Enable threaded mode to handle multiple requests concurrently
