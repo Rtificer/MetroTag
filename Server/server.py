@@ -9,7 +9,7 @@ class Location:
         self.longitude = longitude
 
 class Player:
-    def __init__(self, user_name, role):
+    def __init__(self, user_name, role = "runner"):
         self.user_name = user_name
         # runner or tagger
         self.role = role
@@ -120,7 +120,7 @@ def join_game():
         if player.user_name == data['user_name']:
             return jsonify({"code": 7})
     
-    games[index].players.append(Player(data['user_name'], data['role']))
+    games[index].players.append(Player(data['user_name']))
     
         
     
