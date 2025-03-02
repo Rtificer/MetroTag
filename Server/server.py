@@ -51,28 +51,6 @@ def verify_credentials_arguments(lobby_name):
         if game.lobby_name == lobby_name:
             return index
     return -1
-        
-def identify_Tagger(players):
-    for player in players:
-        if player.role == "tagger":
-            return player
-    return None
-
-def find_nearest_player(tagger, players):
-    nearest_player = None
-    min_distance = float('inf')  # Initialize with a large value
-
-    for player in players:
-        if player.user_name != tagger.user_name and player.is_tagged:  # Skip the tagger itself and untagged players
-            # Calculate distance using geopy
-            tagger_location = (tagger.location.latitude, tagger.location.longitude)
-            player_location = (player.location.latitude, player.location.longitude)
-            distance = geodesic(tagger_location, player_location).kilometers
-            if distance < min_distance:
-                min_distance = distance
-                nearest_player = player
-
-    return nearest_player
 
 def find_center_coordinates(players):
     if not players:
