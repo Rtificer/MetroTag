@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 from geopy.distance import geodesic  # For distance calculations
 from geopy import Point  # For working with coordinates
+from flask_cors import CORS  # Import CORS
+
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all domains
 
 class Location:
     def __init__(self, latitude, longitude):
@@ -118,14 +121,23 @@ def join_game():
 
     for player in games[index].players:
         if player.user_name == str(data['user_name']):
-            return jsonify({"code": 7})
+            return jsonify({"code": 8})
     
     games[index].players.append(Player(data['user_name']))
     
     return jsonify({"code": 0})
+
+@app.route('/start_game', methods=['POST'])
+def start_game():
+    global games
+    data = request.get_json()
+    index = verify_credentials_data(data)
     
-        
+    if index == -1:
+        return jsonify({"code": 7})
     
+    games[index].is_active = True
+
 @app.route('/get_game_state', methods=['GET'])
 def get_gamestate():
     global games
