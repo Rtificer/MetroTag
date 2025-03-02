@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
-from geolib import geohash
-from geolib import getCenter
+import geolib
 app = Flask(__name__)
 
 class Location:
