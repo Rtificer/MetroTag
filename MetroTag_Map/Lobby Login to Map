@@ -47,7 +47,7 @@
             <input type="text" id="lobby_name" placeholder="Lobby Name" required><br>
             <button type="submit">Login</button>
         </form>
-        <p id="errorMessage" style="color: red; display: none;">Invalid credentials. Please try again.</p>
+        <p id="errorMessage" style="color: rgb(255, 6, 6); display: none;">Invalid credentials. Please try again.</p>
     </div>
 
     <script>
@@ -59,7 +59,7 @@
 
             // Send the credentials to the server
             fetch('/login', {
-                method: 'POST',
+                method: '',
                 headers: {
                     'Content-Type': 'application/json',
                 },

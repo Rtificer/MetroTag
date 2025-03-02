@@ -19,74 +19,67 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Initialize the map and set its view
-        var map = L.map('map').setView([center], 5); // Zoomed out to fit multiple markers
+        // Initialize the map without setting a center
+        var map = L.map('map');
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Fetch the game state from the backend
-        fetch('/get_game_state?lobby_name=exampleLobby')
-            .then(response => response.json())
-            .then(data => {
-                // Assign the received data to the game_status variable
-                const game_status = data;
-
-                // Call the updateMap function to update the map with the game state
-                updateMap(game_status);
-            })
-            .catch(error => console.log('Error fetching game state:', error));
-
-
-
+        // Fetch the center coordinates first to initialize the map
         fetch('/get_center_coords?lobby_name=exampleLobby')
             .then(response => response.json())
             .then(data => {
                 if (data.code === 7 && data.center_coordinates) {
                     const center = data.center_coordinates;
-                    // Initialize the map with the center coordinates
-                    initializeMap(center);
+                    // Initialize the map with the center coordinates and zoom level
+                    map.setView(center, 5); // Zoomed out to fit multiple markers
+
+                    // Add OpenStreetMap tiles
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    // Add a red circle around the center (as an example)
+                    L.circle(center, {
+                        color: "red",
+                        fillColor: "pink",
+                        fillOpacity: 0.5,
+                        radius: 1000 // Example radius, adjust as needed
+                    }).addTo(map)
+                    .bindPopup("This is a red circle around the center!");
+
+                    // Now fetch the game state
+                    fetch('/get_game_state?lobby_name=exampleLobby')
+                        .then(response => response.json())
+                        .then(game_status => {
+                            // Loop through the players in game_status and add markers
+                            for (var player in game_status) {
+                                if (player !== "game_status") { // Ignore the "game_status" key itself
+                                    var playerData = game_status[player];
+
+                                    var markerColor = playerData.role === "Tagger" ? 'red' : 'blue'; // Red for Tagger, Blue for others
+
+                                    // Create the marker with the determined color
+                                    L.marker(playerData.location, {
+                                        icon: L.divIcon({
+                                            className: 'custom-triangle-icon',
+                                            html: `
+                                                <div style="position: relative; width: 0; height: 0;">
+                                                    <!-- Triangle -->
+                                                    <div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid ${markerColor};"></div>
+                                                    <!-- Circle on top -->
+                                                    <div style="position: absolute; top: -15px; right: -19px ; width: 12px; height: 12px; background-color: ${markerColor}; border-radius: 50%; border: 3px solid ${markerColor};"></div>
+                                                </div>`,
+                                            iconSize: [20, 30] // Size of the icon (adjust to fit both)
+                                        })
+                                    }).addTo(map)
+                                    .bindPopup(player); // Bind popup with player name
+                                }
+                            }
+                        })
+                        .catch(error => console.log('Error fetching game state:', error));
                 } else {
                     console.log('Error fetching center coordinates:', data.message);
                 }
             })
             .catch(error => console.log('Error fetching center coordinates:', error));
-
-        // Loop through the players in game_status and add markers
-        for (var player in game_status) {
-            if (player !== "game_status") { // Ignore the "game_status" key itself
-                var playerData = game_status[player];
-		 
-	        var markerColor = playerData.role === "Tagger" ? 'red' : 'blue'; // Red for Tagger, Blue for others
-
-        // Create the marker with the determined color
-                L.marker(playerData.location, {
-            		icon: L.divIcon({
-                		className: 'custom-triangle-icon',
-                		html: `
-                    			<div style="position: relative; width: 0; height: 0;">
-                        			<!-- Triangle -->
-                        			<div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid ${markerColor};"></div>
-                        			<!-- Circle on top -->
-                        			<div style="position: absolute; top: -15px; right: -19px ; width: 12px; height: 12px; background-color: ${markerColor}; border-radius: 50%; border: 3px solid ${markerColor};"></div>
-                    </div>`,
-                iconSize: [20, 30] // Size of the icon (adjust to fit both)
-            })
-        }).addTo(map)
-        .bindPopup(player); // Bind popup with player name
-    }
-}
-
-        // Add a red circle around NYC (just as an example)
-        L.circle([center], {
-            color: "red",
-            fillColor: "pink",
-            fillOpacity: 0.5,
-            radius: 1000 // Example radius, adjust as needed
-        }).addTo(map)
-          .bindPopup("This is a red circle around NYC!");
     </script>
     <h4>This map displays all players</h4>
 
