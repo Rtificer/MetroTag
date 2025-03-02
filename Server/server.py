@@ -8,8 +8,8 @@ CORS(app)  # Enable CORS for all domains
 
 class Location:
     def __init__(self, latitude, longitude):
-        self.latitude = longitude
-        self.longitude = longitude
+        self.latitude = latitude  # Corrected
+        self.longitude = longitude  # Corrected
 
 class Player:
     def __init__(self, user_name, role = "runner"):
@@ -88,44 +88,37 @@ def find_center_coordinates(players):
 def create_game():
     global games
     data = request.get_json()
-    if 'lobby_name' not in data:
-        return jsonify({"code": 7})
-        
-    if not isinstance(data['lobby_name'], str):
-        return jsonify({"code": 7})
 
-    if len(data['lobby_name']) < 1:
-        return jsonify({"code": 3})
+    if 'lobby_name' not in data or not isinstance(data['lobby_name'], str) or len(data['lobby_name'].strip()) == 0:
+        return jsonify({"code": 7})  # Invalid input
 
     for game in games:
         if game.lobby_name == data['lobby_name']:
-            return jsonify({"code": 1})
-    
+            return jsonify({"code": 1})  # Lobby already exists
+
     games.append(Game(data['lobby_name']))
-    return jsonify({"code": 0})
+    return jsonify({"code": 0})  # Success
 
 @app.route('/join_game', methods=['POST'])
 def join_game():
     global games
     data = request.get_json()
+    
     index = verify_credentials_data(data)
-    
     if index == -1:
-        return jsonify({"code": 7})
-    
-    if 'user_name' not in data:
-        return jsonify({"code": 7})
-    
-    if not isinstance(data['user_name'], str):
-        return jsonify({"code": 7})
+        return jsonify({"code": 7})  # Invalid lobby
 
+    if 'user_name' not in data or not isinstance(data['user_name'], str) or len(data['user_name'].strip()) == 0:
+        return jsonify({"code": 7})  # Invalid username
+
+    # Prevent duplicate usernames
     for player in games[index].players:
-        if player.user_name == str(data['user_name']):
-            return jsonify({"code": 8})
-    
+        if player.user_name == data['user_name']:
+            return jsonify({"code": 8})  # Username already exists in the lobby
+
     games[index].players.append(Player(data['user_name']))
     
-    return jsonify({"code": 0})
+    return jsonify({"code": 0})  # Successfully joined
 
 @app.route('/start_game', methods=['POST'])
 def start_game():
