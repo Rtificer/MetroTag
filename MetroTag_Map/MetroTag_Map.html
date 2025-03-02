@@ -48,11 +48,12 @@
                     // Now fetch the game state
                     fetch('/get_game_state?lobby_name=exampleLobby')
                         .then(response => response.json())
-                        .then(game_status => {
-                            // Loop through the players in game_status and add markers
-                            for (var player in game_status) {
-                                if (player !== "game_status") { // Ignore the "game_status" key itself
-                                    var playerData = game_status[player];
+                        .then(game_state => {
+                            // Check if game is active before proceeding
+                            if (game_state.game_status) {
+                                // Loop through the players in game_state and add markers
+                                for (var player in game_state.players) {
+                                    var playerData = game_state.players[player];
 
                                     var markerColor = playerData.role === "Tagger" ? 'red' : 'blue'; // Red for Tagger, Blue for others
 
