@@ -28,16 +28,16 @@
         }).addTo(map);
 
         // Fetch the game state from the backend
-    	fetch('/get_game_state?lobby_name=exampleLobby&password=examplePassword')
-        	.then(response => response.json())
-        	.then(data => {
-            		// Assign the received data to the game_status variable
-            		const game_status = data;
+        fetch('/get_game_state?lobby_name=exampleLobby')
+            .then(response => response.json())
+            .then(data => {
+                // Assign the received data to the game_status variable
+                const game_status = data;
 
-            		// Call the updateMap function to update the map with the game state
-            		updateMap(game_status);
-        	})
-        	.catch(error => console.log('Error fetching game state:', error));
+                // Call the updateMap function to update the map with the game state
+                updateMap(game_status);
+            })
+            .catch(error => console.log('Error fetching game state:', error));
 
         // Loop through the players in game_status and add markers
         for (var player in game_status) {
