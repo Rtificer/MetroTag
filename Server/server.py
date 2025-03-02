@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
-
+from geolib import geohash
+from geolib import getCenter
 app = Flask(__name__)
 
 class Location:
@@ -45,6 +46,41 @@ def verify_credentials_arguments(lobby_name, password):
             return index
     return -1
         
+def identify_Tagger(players):
+    for player in players:
+        if player.role.lower() == "tagger":
+            return player
+    return None
+
+def find_nearest_player(tagger, players):
+    nearest_player = None
+    min_distance = float('inf')  # Initialize with a large value
+
+    for player in players:
+        if player.user_name != tagger.user_name:  # Skip the tagger itself
+            if player.is_tagged == True:
+                # Calculate distance using geolib
+                distance = geohash.distance(
+                    (tagger.location.latitude, tagger.location.longitude),
+                    (player.location.latitude, player.location.longitude)
+                )
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_player = player
+
+    return nearest_player, min_distance
+
+def find_center_coordinates(players):
+    if not players:
+        return None  # Return None if no players exist
+
+    # Create a list of dictionaries containing lat/lon for each player
+    player_locations = [{"latitude":p.location.latitude, "longitude":p.location.longitude} for p in players]
+
+    # Use geolib to find the center
+    center = getCenter(player_locations)
+
+    return center  # Returns {"latitude": centerLat, "longitude": centerLon}
 
 @app.route('/create_game', methods=['POST'])
 def create_game():
@@ -107,8 +143,29 @@ def update_player_data():
     if index == -1:
         return jsonify({"code": 7})
     
-    game = game[index]
-    
+    game = games[index]
+
+@app.route('/get_center_coords', methods=['GET'])
+def get_center_coords():
+    global games
+    lobby_name = request.args.get("lobby_name")
+
+    if not lobby_name:
+        return jsonify({"code": 7})
+
+    index = verify_credentials_arguments(lobby_name)
+    if index == -1:
+        return jsonify({"code": 7})
+
+    game = games[index]
+
+    center = find_center_coordinates(game.players)
+    if center is None:
+        return jsonify({"code": 8, "message": "No players in the game"})  # Custom error code for no players
+
+    return jsonify({"code": 7, "center_coordinates":center})
+
+
     
 
 
