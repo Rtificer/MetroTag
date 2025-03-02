@@ -42,7 +42,7 @@ const Arrow: React.FC<ArrowProps> = ({ angleOffset = 0 }) => {
 		<View style={styles.container}>
 			<Text style={styles.text}>
 				Heading:{' '}
-				{Math.round((((360 - (90 - smoothedAngle)) % 360) + 360) % 360)}
+				{Math.round((((360 - (90 - smoothedAngle)) % 360) + 360) % 360 + angleOffset)}
 				°
 			</Text>
 			<Text style={styles.text}>
@@ -54,7 +54,7 @@ const Arrow: React.FC<ArrowProps> = ({ angleOffset = 0 }) => {
 					height="100"
 					viewBox="0 0 100 100"
 					style={{
-						transform: [{ rotate: `${90 - smoothedAngle}deg` }]
+						transform: [{ rotate: `${90 - smoothedAngle + angleOffset}deg` }]
 					}}
 				>
 					<Polygon points="50,10 90,90 50,75 10,90" fill="white" />

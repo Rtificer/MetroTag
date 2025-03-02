@@ -1,2 +1,4 @@
 Client/.vscode
 Client/node_modules
+venv/
+__pycache__/

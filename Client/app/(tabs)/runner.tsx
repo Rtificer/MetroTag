@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Button, Alert } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
+const host_url = `https://43ppk7jt-5000.use.devtunnels.ms/`;
+
 type RunnerScreenRouteProp = RouteProp<{ params: { name: string } }, 'params'>;
 
 export default function Runner() {
@@ -41,16 +43,13 @@ export default function Runner() {
 					is_tagged: tagged
 				};
 
-				await fetch(
-					'https://fh4vn7tb-5000.use.devtunnels.ms/update_player_data',
-					{
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(data)
-					}
-				);
+				await fetch(`${host_url}/update_player_data`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				});
 
 				console.log('Location sent:', data);
 			} catch (error) {
