@@ -55,7 +55,7 @@
                                 for (var player in game_state.players) {
                                     var playerData = game_state.players[player];
 
-                                    var markerColor = playerData.role === "Tagger" ? 'red' : 'blue'; // Red for Tagger, Blue for others
+                                    var markerColor = playerData.role === "tagger" ? 'red' : 'blue'; // Red for Tagger, Blue for others
 
                                     // Create the marker with the determined color
                                     L.marker(playerData.location, {
