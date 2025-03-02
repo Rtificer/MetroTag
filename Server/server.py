@@ -48,11 +48,23 @@ def verify_credentials_arguments(lobby_name):
             return index
     return -1
         
-def identify_Tagger(players):
+def identify_tagger(players):
     for player in players:
         if player.role == "tagger":
             return player
     return None
+
+def distance_from_tagger(player, game):
+    if(player.role == 'runner'): 
+        runner_coords = (player.location.latitude, player.location.longitude)
+        tagger_coords = (identify_tagger(game.players).location.latitude, identify_tagger(game.players).location.longitude)
+        distance = geodesic(runner_coords, tagger_coords).meters
+    elif(player.role == 'tagger'):
+        tagger_coords = (player.location.latitude, player.location.longitude)
+        nearest_runner_coords = (find_nearest_player(player, game.players))
+        distance = geodesic(tagger_coords, nearest_runner_coords).meters
+    
+    return distance
 
 def find_nearest_player(tagger, players):
     nearest_player = None
