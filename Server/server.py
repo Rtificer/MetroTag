@@ -45,11 +45,30 @@ def verify_credentials_arguments(lobby_name):
             return index
     return -1
         
-def identify_Tagger(players):
+def identify_tagger(players):
     for player in players:
         if player.role == "tagger":
             return player
     return None
+
+def colorIntensity(player, game):
+    if(player.role == 'runner'): 
+        runner_coords = (player.location.latitude, player.location.longitude)
+        tagger_coords = (identify_tagger(game.players).location.latitude, identify_tagger(game.players).location.longitude)
+        distance = geodesic(runner_coords, tagger_coords).meters
+    elif(player.role == 'tagger'):
+        tagger_coords = (player.location.latitude, player.location.longitude)
+        nearest_runner_coords = (find_nearest_player(player, game.players))
+        distance = geodesic(tagger_coords, nearest_runner_coords).meters
+
+    intensity = max(0, min(1, (15 - distance) / 15))  # Normalizing the distance
+    # Adjust the intensity based on the distance (closer is higher intensity)
+    intensity = distance ** 2  # Exponential curve for stronger intensity change
+
+    # Scale intensity to 0-255 for color representation
+    color_intensity = int(intensity * 255)
+    
+    return color_intensity
 
 def find_nearest_player(tagger, players):
     nearest_player = None
