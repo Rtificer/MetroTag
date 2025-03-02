@@ -24,7 +24,19 @@ class Game:
 
 games = []
 
-def verify_credentials(lobby_name, password):
+def verify_credentials_data(data):
+    if 'lobby_name' not in data and 'user_name' not in data:
+        return -1
+    
+    if not isinstance(data['lobby_name'], str) or not isinstance(data['password'], str):
+        return -1
+
+    for index, game in enumerate(games):
+        if game.lobby_name == data['lobby_name'] and game.password == data['password']:
+            return index
+    return -1
+
+def verify_credentials_arguments(lobby_name, password):
     if not isinstance(lobby_name, str) or not isinstance(password, str):
         return -1
 
@@ -36,7 +48,7 @@ def verify_credentials(lobby_name, password):
 
 @app.route('/create_game', methods=['POST'])
 def create_game():
-    
+    global games
     data = request.get_json()
     if 'lobby_name' not in data or 'password' not in data:
         return jsonify({"code": 7})
@@ -57,13 +69,14 @@ def create_game():
 
 @app.route('/get_game_state', methods=['GET'])
 def get_gamestate():
+    global games
     lobby_name = request.args.get("lobby_name")
     password = request.args.get("password")
 
     if not lobby_name or not password:
         return jsonify({"code": 7})
 
-    index = verify_credentials(lobby_name, password)
+    index = verify_credentials_arguments(lobby_name, password)
     if index == -1:
         return jsonify({"code": 7})
 
@@ -83,6 +96,20 @@ def get_gamestate():
     }
 
     return jsonify(game_state)
+
+@app.route('/update_player_data', methods=['POST'])
+def update_player_data():
+    global games
+    data = request.get_json()
+    
+    index = verify_credentials_data(data)
+    
+    if index == -1:
+        return jsonify({"code": 7})
+    
+    game = game[index]
+    
+    
 
 
 if __name__ == '__main__':
